@@ -1,5 +1,5 @@
 {
-  "name": "temp-web",
+  "name": "jin-web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "generate:api": "openapi-typescript ../Yormun_Core/contracts/openapi.json -o src/api-types.ts"
+    "generate:api": "openapi-typescript ../Jin_Core/contracts/openapi.json -o src/api-types.ts"
   },
   "dependencies": {
     "openapi-typescript": "^7.13.0",
