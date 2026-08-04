@@ -1,32 +1,41 @@
-# React + TypeScript + Vite
+# Jin_Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Dashboard de Jin — cabina de mando para agentes autónomos. React Router v8 (framework mode, SPA), React 19, TanStack Query, Socket.IO.
 
-Currently, two official plugins are available:
+Ver `Jin_Docs/docs/BLUEPRINT.md` §8.1 y `docs/WEB_DESIGN_BRIEF.md` para el contexto de producto y diseño.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Desarrollo
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+nvm use
+pnpm install
+pnpm run generate:api   # tipos desde ../Jin_Core/contracts/openapi.json
+pnpm dev                # http://localhost:5173, proxea /api y /socket.io a Jin_Core en :3000
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Comandos
+
+```bash
+pnpm typecheck   # react-router typegen && tsc --noEmit
+pnpm lint        # oxlint
+pnpm build       # build estático (SPA mode, ssr:false) para Cloudflare Pages
+```
+
+## Estructura
+
+```
+app/
+  root.tsx          # shell HTML, fuentes, QueryClientProvider
+  routes.ts          # config de rutas
+  routes/            # una pantalla por archivo
+  lib/               # api-client (cookie-only, sin JWT en JS), ws-client, query-client
+  features/          # hooks + componentes por dominio (hitl, chat, budget, audit, editor...)
+  components/        # UI compartida (RiskBadge, Button, EmptyState...)
+```
+
+## Decisiones ya tomadas (no re-litigar sin nueva justificación)
+
+- **JWT solo en la cookie `__Host-jin_session`**, nunca en `localStorage`/JS (BLUEPRINT 5.2, ADR 0007).
+- **TanStack Query sin Zustand** — casi todo el estado es de servidor. Ver `Jin_Docs/STATUS.md` §Decisiones del owner para cuándo reconsiderar.
+- **`ssr: false`** — build estático, sin servidor Node en producción.
+- **Tema oscuro único**, sin modo claro (decisión del owner).

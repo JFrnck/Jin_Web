@@ -1,0 +1,14 @@
+{
+  "name": "Jin",
+  "short_name": "Jin",
+  "description": "Cabina de mando para agentes autónomos",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#08090B",
+  "background_color": "#08090B",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
