@@ -1,0 +1,291 @@
+/*
+ * Sistema de diseño Jin — tema oscuro único (v3 aprobado, sin modo claro,
+ * decisión confirmada con el owner 2026-08-03).
+ *
+ * Los 4 niveles de riesgo HITL son un ramp ORDINAL de un solo matiz
+ * (auto < notify < confirm < dual-confirm), validado con el skill de
+ * dataviz contra la superficie --canvas (node scripts/validate_palette.js
+ * "#7e2416,#c33822,#E2543F" --mode dark --surface "#08090B" --ordinal):
+ * lightness monotone, ΔL >= 0.06 entre pasos, mismo matiz (spread 1°),
+ * light-end clears 2:1. `auto` no lleva color (solo texto atenuado) —
+ * es el "escalón 0" del ramp, más "silencioso" que notify.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* Superficies */
+  --canvas: #08090b;
+  --surface: #14161a;
+  --sunken: #1b1e24;
+
+  /* Texto */
+  --text: #e7e9ec;
+  --muted: #8b929c;
+  --dim: #5f666f;
+
+  /* Acento de marca — reservado para riesgo irreversible (dual-confirm) y marca. Nunca decorativo. */
+  --accent: #e2543f;
+
+  /* Ramp ordinal de riesgo HITL (auto no tiene color propio) */
+  --risk-notify: #7e2416;
+  --risk-confirm: #c33822;
+  --risk-dual: var(--accent);
+
+  /* Estado, no riesgo — resultado de una decisión ya tomada */
+  --status-approved: #45b98a;
+  --status-rejected: #8b4a3e;
+  --status-expired: var(--dim);
+  --link: #5bb8ce;
+  --link-hover: #8fd6e6;
+
+  /* Escala base 4, ritmo 8 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+
+  --font-sans:
+    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* Áreas seguras de PWA standalone (BLUEPRINT 8.1.1) */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--link-hover);
+}
+
+code,
+.mono {
+  font-family: var(--font-mono);
+}
+
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font-family: inherit;
+}
+
+@keyframes jinArrive {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Risk badges (4 niveles HITL) ────────────────────────────────────── */
+
+.jin-risk {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 20px;
+  border: 1px solid transparent;
+}
+.jin-risk-auto {
+  color: var(--dim);
+  background: transparent;
+}
+.jin-risk-notify {
+  color: #e7b7ab;
+  background: color-mix(in srgb, var(--risk-notify) 28%, transparent);
+  border-color: color-mix(in srgb, var(--risk-notify) 55%, transparent);
+}
+.jin-risk-confirm {
+  color: #ffd9cc;
+  background: color-mix(in srgb, var(--risk-confirm) 30%, transparent);
+  border-color: color-mix(in srgb, var(--risk-confirm) 60%, transparent);
+  font-weight: 700;
+}
+.jin-risk-dual {
+  color: #fff;
+  background: var(--risk-dual);
+  border-color: var(--risk-dual);
+  font-weight: 700;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--risk-dual) 50%, transparent);
+}
+
+/* ── Primitivos ──────────────────────────────────────────────────────── */
+
+.jin-card {
+  background: var(--surface);
+  border: 1px solid var(--sunken);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.jin-card--dual {
+  border-color: var(--risk-dual);
+  border-width: 2px;
+}
+
+.jin-btn {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--sunken);
+  background: var(--sunken);
+  color: var(--text);
+  cursor: pointer;
+  min-height: 40px;
+}
+.jin-btn:hover {
+  background: color-mix(in srgb, var(--sunken) 70%, var(--muted));
+}
+.jin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.jin-btn--primary {
+  background: var(--text);
+  color: var(--canvas);
+  border-color: var(--text);
+}
+.jin-btn--danger {
+  background: transparent;
+  color: var(--risk-confirm);
+  border-color: var(--risk-confirm);
+}
+.jin-btn--accent {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.jin-muted {
+  color: var(--muted);
+}
+.jin-dim {
+  color: var(--dim);
+}
+
+.jin-connection {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+.jin-connection[data-status='live'] {
+  color: var(--status-approved);
+}
+.jin-connection[data-status='reconnecting'] {
+  color: var(--risk-confirm);
+}
+.jin-connection[data-status='stale'] {
+  color: var(--risk-confirm);
+}
+.jin-connection[data-status='offline'] {
+  color: var(--muted);
+}
+
+/* Móvil primero (diseño v3 §04): nav inferior de 4 ítems bajo 720px,
+   sidebar completo de escritorio (§05) desde ahí. */
+@media (max-width: 720px) {
+  .jin-nav-desktop {
+    display: none !important;
+  }
+  .jin-nav-mobile {
+    display: flex !important;
+  }
+}
+
+/* ── Zone Widgets del editor (comentarios de IA por línea) ──────────── */
+
+.jin-ai-comment {
+  margin: 4px var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border-left: 3px solid var(--risk-confirm);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+}
+.jin-ai-comment-label {
+  margin: 0 0 4px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.jin-ai-comment-body {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.jin-ai-comment-actions {
+  display: flex;
+  gap: 8px;
+}
+.jin-ai-comment-actions button {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--sunken);
+  background: var(--sunken);
+  color: var(--text);
+  cursor: pointer;
+}
+.jin-ai-comment-actions button[data-action='accept'] {
+  background: var(--text);
+  color: var(--canvas);
+  border-color: var(--text);
+}
+
+.jin-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--sunken),
+    color-mix(in srgb, var(--sunken) 60%, var(--muted)),
+    var(--sunken)
+  );
+  border-radius: var(--radius-md);
+  /* Sin brillo animado en una cabina: el movimiento se reserva para lo
+     que llega en vivo (diseño v3 §08). */
+}
