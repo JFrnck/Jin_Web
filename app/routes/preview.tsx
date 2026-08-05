@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { api, unwrap } from '~/lib/api-client'
+import { api, getErrorMessage, unwrap } from '~/lib/api-client'
 import { EmptyState, Skeleton } from '~/components/EmptyState'
 
 function timeLeft(iso: string): string {
@@ -12,6 +13,7 @@ function timeLeft(iso: string): string {
 
 export default function Preview() {
   const queryClient = useQueryClient()
+  const [stopError, setStopError] = useState<string | null>(null)
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['preview-services'],
     queryFn: async () => unwrap(await api.GET('/api/preview-services')),
@@ -19,10 +21,21 @@ export default function Preview() {
   })
 
   async function stop(id: string) {
-    await api.DELETE('/api/preview-services/{serviceId}', {
-      params: { path: { serviceId: id } },
-    })
-    await queryClient.invalidateQueries({ queryKey: ['preview-services'] })
+    setStopError(null)
+    try {
+      // docs/RECOMENDACIONES.md #17: antes esto no pasaba por `unwrap()` —
+      // `api.DELETE` no lanza por sí solo (openapi-fetch resuelve
+      // {data,error}, nunca rechaza), así que un fallo real se ignoraba
+      // por completo y el botón "Detener" parecía funcionar siempre.
+      unwrap(
+        await api.DELETE('/api/preview-services/{serviceId}', {
+          params: { path: { serviceId: id } },
+        }),
+      )
+      await queryClient.invalidateQueries({ queryKey: ['preview-services'] })
+    } catch (err) {
+      setStopError(getErrorMessage(err))
+    }
   }
 
   return (
@@ -33,6 +46,12 @@ export default function Preview() {
           dominio ajeno a la sesión · sufijo aleatorio · máx. 24 h
         </p>
       </header>
+
+      {stopError && (
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
+          ⚠ No se pudo detener: {stopError}
+        </p>
+      )}
 
       {isLoading && <Skeleton height={120} />}
 

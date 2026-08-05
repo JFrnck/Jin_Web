@@ -54,11 +54,39 @@ export function useChat() {
       })
     }
 
+    // docs/RECOMENDACIONES.md #16: sin esto, un turno que se cae a mitad
+    // de camino (WS desconectado antes de chat:response/chat:error) deja
+    // `pending` en true para siempre — el botón de enviar queda
+    // deshabilitado y el turno muestra "trabajando…" sin fin. No se
+    // reintenta el turno automáticamente al reconectar: pudo haber
+    // ejecutado tools con efectos reales, reintentarlo a ciegas es peor
+    // que dejar que el owner decida qué hacer.
+    const onDisconnect = () => {
+      setPending((wasPending) => {
+        if (!wasPending) return wasPending
+        setTurns((prev) => {
+          const next = [...prev]
+          const last = next[next.length - 1]
+          if (last && !last.result && !last.error) {
+            next[next.length - 1] = {
+              ...last,
+              error:
+                'Se perdió la conexión antes de que llegara la respuesta. No sabemos si el turno se completó — revisá /hitl y /audit antes de reintentar.',
+            }
+          }
+          return next
+        })
+        return false
+      })
+    }
+
     socket.on('chat:response', onResponse)
     socket.on('chat:error', onError)
+    socket.on('disconnect', onDisconnect)
     return () => {
       socket.off('chat:response', onResponse)
       socket.off('chat:error', onError)
+      socket.off('disconnect', onDisconnect)
     }
   }, [])
 
