@@ -111,6 +111,21 @@ export function ApprovalCard({
         {approval.planSummary ?? approval.toolName}
       </p>
 
+      {(approval.actor ?? approval.externalInputsSummary) && (
+        <div style={{ display: 'grid', gap: 2 }}>
+          {approval.actor && (
+            <p className="jin-dim" style={{ fontSize: 13, margin: 0 }}>
+              Solicitado por: <span className="mono">{approval.actor}</span>
+            </p>
+          )}
+          {approval.externalInputsSummary && (
+            <p className="jin-dim" style={{ fontSize: 13, margin: 0 }}>
+              Influido por: <span className="mono">{approval.externalInputsSummary}</span>
+            </p>
+          )}
+        </div>
+      )}
+
       <div style={{ borderTop: '1px solid var(--sunken)', paddingTop: 'var(--space-2)' }}>
         <p className="mono jin-dim" style={{ fontSize: 11, margin: '0 0 6px' }}>
           PAYLOAD REAL
