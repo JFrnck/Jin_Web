@@ -20,4 +20,49 @@ jobs:
       - run: pnpm run lint
       - run: pnpm run typecheck
       - run: pnpm run build
-      - run: pnpm run generate:api || true
+      # El checkout de Jin_Core va DESPUÉS de lint/typecheck/build a
+      # propósito: tsconfig.json de este repo incluye `**/*` y oxlint no
+      # tiene ignores configurados, así que un checkout más temprano haría
+      # que ambos procesen el código de Jin_Core (falsos positivos ajenos
+      # a este repo) — mismo problema que Jin_CLI resolvió con ignores
+      # explícitos; acá alcanza con no tener el directorio presente todavía.
+      - name: Checkout Jin_Core contracts
+        uses: actions/checkout@v4
+        with:
+          repository: 'JFrnck/Jin_Core'
+          path: 'Jin_Core'
+      - name: Copy Jin_Core contracts for relative path
+        run: mkdir -p ../Jin_Core && cp -r Jin_Core/contracts ../Jin_Core/
+      - run: pnpm run generate:api
+      - name: Check for uncommitted API types changes
+        run: git diff --exit-code -- app/lib/api-types.ts
+
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 11
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      # ssr:false (react-router.config.ts) -> build estático en build/client,
+      # servido desde Cloudflare Pages (BLUEPRINT 8.1/12.4) — sin servidor
+      # Node ni Deployment K8s para esta app.
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: jin-web
+          directory: build/client
