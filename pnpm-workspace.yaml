@@ -1,0 +1,12 @@
+# No es un monorepo: este repo sigue siendo independiente, con su
+# propio lockfile. pnpm 11 ya no lee `pnpm.overrides` de package.json
+# (avisa "no longer read by pnpm" al instalar) — este es el único lugar
+# real donde vive un override de versión ahora.
+overrides:
+  # docs/RECOMENDACIONES.md #19: monaco-editor@0.56.0 (última versión
+  # estable publicada, sin release más nueva que soltar) fija su propia
+  # dependencia de dompurify en el EXACTO 3.4.8 — cubierto por 3
+  # advisories (moderado: pollution de ALLOWED_ATTR vía setConfig();
+  # bajo × 2: bypass de afterSanitizeElements y Trusted Types
+  # sobreviviendo a clearConfig()). Todos parcheados en >=3.4.12.
+  dompurify: ^3.4.12
