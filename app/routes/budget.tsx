@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { useBudgetStatus } from '~/features/budget/useBudgetStatus'
-import { api } from '~/lib/api-client'
+import { api, getErrorMessage, unwrap } from '~/lib/api-client'
 import { useQueryClient } from '@tanstack/react-query'
 import { BUDGET_QUERY_KEY } from '~/features/budget/useBudgetStatus'
 import { EmptyState, Skeleton } from '~/components/EmptyState'
@@ -17,6 +17,7 @@ function UnpauseButton() {
   const queryClient = useQueryClient()
   const [progress, setProgress] = useState(0)
   const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const timerRef = useRef<number | null>(null)
   const startRef = useRef(0)
 
@@ -41,8 +42,14 @@ function UnpauseButton() {
 
   async function confirmUnpause() {
     setPending(true)
+    setError(null)
     try {
-      await api.POST('/api/budget/unpause', {})
+      // docs/RECOMENDACIONES.md #17: sin `unwrap()`, un fallo real acá
+      // (ej. el kill switch ya se había reactivado) pasaba desapercibido
+      // — el hold de 3s "funcionaba" siempre a los ojos del owner.
+      unwrap(await api.POST('/api/budget/unpause', {}))
+    } catch (err) {
+      setError(getErrorMessage(err))
     } finally {
       setPending(false)
       await queryClient.invalidateQueries({ queryKey: BUDGET_QUERY_KEY })
@@ -50,34 +57,41 @@ function UnpauseButton() {
   }
 
   return (
-    <button
-      type="button"
-      className="jin-btn jin-btn--accent"
-      onMouseDown={start}
-      onMouseUp={clear}
-      onMouseLeave={clear}
-      onTouchStart={start}
-      onTouchEnd={clear}
-      disabled={pending}
-      style={{
-        position: 'relative',
-        overflow: 'hidden',
-        width: '100%',
-      }}
-    >
-      <span
+    <div style={{ display: 'grid', gap: 6 }}>
+      <button
+        type="button"
+        className="jin-btn jin-btn--accent"
+        onMouseDown={start}
+        onMouseUp={clear}
+        onMouseLeave={clear}
+        onTouchStart={start}
+        onTouchEnd={clear}
+        disabled={pending}
         style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'rgba(255,255,255,0.25)',
-          width: `${progress * 100}%`,
-          transition: progress === 0 ? 'width 150ms ease-out' : 'none',
+          position: 'relative',
+          overflow: 'hidden',
+          width: '100%',
         }}
-      />
-      <span style={{ position: 'relative' }}>
-        {pending ? 'Reanudando…' : 'Reanudar agentes — mantener pulsado 3 s'}
-      </span>
-    </button>
+      >
+        <span
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'rgba(255,255,255,0.25)',
+            width: `${progress * 100}%`,
+            transition: progress === 0 ? 'width 150ms ease-out' : 'none',
+          }}
+        />
+        <span style={{ position: 'relative' }}>
+          {pending ? 'Reanudando…' : 'Reanudar agentes — mantener pulsado 3 s'}
+        </span>
+      </button>
+      {error && (
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
+          ⚠ No se reanudó: {error}
+        </p>
+      )}
+    </div>
   )
 }
 

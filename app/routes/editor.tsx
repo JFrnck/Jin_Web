@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import Editor, { type Monaco, type OnMount } from '@monaco-editor/react'
 import type * as MonacoNs from 'monaco-editor'
 import { useAiCommentZoneWidgets, type AiComment } from '~/features/editor/AiCommentWidget'
-import { api, unwrap } from '~/lib/api-client'
+import { api, getErrorMessage, unwrap } from '~/lib/api-client'
 import { Button } from '~/components/Button'
 
 const DEFAULT_CODE = `export function parseCsv(raw: string) {
@@ -32,6 +32,7 @@ export default function EditorPage() {
   const [code, setCode] = useState(DEFAULT_CODE)
   const [comments, setComments] = useState<AiComment[]>([])
   const [loading, setLoading] = useState(false)
+  const [requestError, setRequestError] = useState<string | null>(null)
   const editorRef = useRef<MonacoNs.editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<Monaco | null>(null)
 
@@ -58,6 +59,7 @@ export default function EditorPage() {
   async function requestComments() {
     setLoading(true)
     setComments([])
+    setRequestError(null)
     try {
       const numbered = code
         .split('\n')
@@ -77,6 +79,11 @@ export default function EditorPage() {
         }),
       )
       setComments(parseLineComments(data.finalResponse))
+    } catch (err) {
+      // docs/RECOMENDACIONES.md #17: sin catch, un fallo de /api/chat acá
+      // (ej. kill switch activo, presupuesto agotado) quedaba mudo — el
+      // botón volvía a "Comentarios de la IA" sin ninguna explicación.
+      setRequestError(getErrorMessage(err))
     } finally {
       setLoading(false)
     }
@@ -92,6 +99,12 @@ export default function EditorPage() {
           {loading ? 'Pensando…' : 'Comentarios de la IA'}
         </Button>
       </header>
+
+      {requestError && (
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
+          ⚠ No se pudieron pedir comentarios: {requestError}
+        </p>
+      )}
 
       <div
         className="jin-card"

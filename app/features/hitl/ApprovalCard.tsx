@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { RiskBadge, type RiskLevel } from '~/components/RiskBadge'
 import { Button } from '~/components/Button'
+import { getErrorMessage } from '~/lib/api-client'
 import type { components } from '~/lib/api-types'
 
 type PendingApproval = components['schemas']['PendingApprovalDto']
@@ -50,6 +51,7 @@ export function ApprovalCard({
   onReject: (requestId: string) => Promise<unknown>
 }) {
   const [pending, setPending] = useState<'approve' | 'reject' | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [, forceTick] = useState(0)
   const isDual = approval.level === 'dual-confirm'
   const awaitingSecond = isDual && approval.firstApprovedAt !== null
@@ -67,8 +69,15 @@ export function ApprovalCard({
 
   async function handleApprove() {
     setPending('approve')
+    setActionError(null)
     try {
       await onApprove(approval.requestId)
+    } catch (err) {
+      // docs/RECOMENDACIONES.md #17: sin este catch, un fallo acá (ej. el
+      // 409 de "segunda confirmación demasiado pronto" en dual-confirm)
+      // no se mostraba — el owner podía creer que aprobó algo que en
+      // realidad no se ejecutó, el peor modo de falla posible en HITL.
+      setActionError(getErrorMessage(err))
     } finally {
       setPending(null)
     }
@@ -76,8 +85,11 @@ export function ApprovalCard({
 
   async function handleReject() {
     setPending('reject')
+    setActionError(null)
     try {
       await onReject(approval.requestId)
+    } catch (err) {
+      setActionError(getErrorMessage(err))
     } finally {
       setPending(null)
     }
@@ -136,6 +148,12 @@ export function ApprovalCard({
       {isDual && (
         <p className="jin-muted" style={{ fontSize: 13, margin: 0 }}>
           irreversible · requiere 2 aprobaciones separadas por ≥30s
+        </p>
+      )}
+
+      {actionError && (
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
+          ⚠ No se completó: {actionError}
         </p>
       )}
 

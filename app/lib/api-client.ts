@@ -40,6 +40,28 @@ export function unwrap<T>({ data, error }: { data?: T; error?: unknown }): T {
   return data
 }
 
+/**
+ * `error` de `unwrap()` no es un `Error` — es el body JSON que devuelve
+ * `JinErrorFilter` (`{statusCode, code, message}`), o directo el body de
+ * un `HttpException` de Nest (guards, ValidationPipe) — ambos con
+ * `message`. Punto único para mostrarle al owner por qué falló una
+ * mutación (docs/RECOMENDACIONES.md #17): antes, varias mutaciones no
+ * tenían ningún `catch`, así que un fallo real se veía igual que un
+ * éxito — grave en HITL, donde el owner podía creer que aprobó algo que
+ * en realidad no se ejecutó.
+ */
+export function getErrorMessage(err: unknown): string {
+  if (
+    err &&
+    typeof err === 'object' &&
+    'message' in err &&
+    typeof err.message === 'string'
+  ) {
+    return err.message
+  }
+  return 'Algo falló y no sabemos bien qué — reintentá o revisá /audit.'
+}
+
 api.use({
   onResponse({ response }) {
     if (
