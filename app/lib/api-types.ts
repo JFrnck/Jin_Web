@@ -396,19 +396,14 @@ export interface components {
             executingAt: string | null;
             executionError: string | null;
         };
-        ChangeModeResult_Output: {
+        ResolveAndExecuteResult_Output: {
             /** @enum {string} */
-            status: "applied";
-            /** @enum {string} */
-            mode: "supervised" | "semi-auto" | "auto";
-            expiresAt: string | null;
+            outcome: "awaiting-second";
         } | {
             /** @enum {string} */
-            status: "pending-approval";
-            requestId: string;
-            /** @enum {string} */
-            mode: "supervised" | "semi-auto" | "auto";
-            hours: number;
+            outcome: "resolved";
+            toolName: string;
+            result: unknown;
         };
         OkResultDto_Output: {
             /** @enum {boolean} */
@@ -473,6 +468,20 @@ export interface components {
             /** @enum {string} */
             mode: "supervised" | "semi-auto" | "auto";
             hours?: number;
+        };
+        ChangeModeResult_Output: {
+            /** @enum {string} */
+            status: "applied";
+            /** @enum {string} */
+            mode: "supervised" | "semi-auto" | "auto";
+            expiresAt: string | null;
+        } | {
+            /** @enum {string} */
+            status: "pending-approval";
+            requestId: string;
+            /** @enum {string} */
+            mode: "supervised" | "semi-auto" | "auto";
+            hours: number;
         };
         ListRunsResponseDto: {
             items: {
@@ -731,7 +740,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeModeResult_Output"];
+                    "application/json": components["schemas"]["ResolveAndExecuteResult_Output"];
                 };
             };
         };
