@@ -54,6 +54,7 @@ export function ApprovalCard({
   const [actionError, setActionError] = useState<string | null>(null)
   const [, forceTick] = useState(0)
   const isDual = approval.level === 'dual-confirm'
+  const executing = approval.executingAt !== null
   const awaitingSecond = isDual && approval.firstApprovedAt !== null
   const secondAvailable =
     approval.availableAt !== null && new Date(approval.availableAt).getTime() <= Date.now()
@@ -151,6 +152,21 @@ export function ApprovalCard({
         </p>
       )}
 
+      {/* Issue Jin_Core #36: la aprobación falló al EJECUTARSE. La acción NO
+          ocurrió y no se reintenta sola: hay que decírselo, no dejar al owner
+          creyendo que salió. */}
+      {approval.executionError && (
+        <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
+          ⚠ La última aprobación NO se ejecutó: {approval.executionError}. No se reintenta
+          sola — aprobala de nuevo si querés reintentar.
+        </p>
+      )}
+      {executing && (
+        <p className="jin-muted" style={{ margin: 0, fontSize: 13 }}>
+          Ejecutándose ahora… (si esto dura más de 15 min, revisá el audit antes de rechazar).
+        </p>
+      )}
+
       {actionError && (
         <p style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
           ⚠ No se completó: {actionError}
@@ -161,7 +177,7 @@ export function ApprovalCard({
         <Button
           variant="danger"
           onClick={handleReject}
-          disabled={pending !== null}
+          disabled={pending !== null || executing}
           style={{ flex: 1 }}
         >
           Rechazar
@@ -170,7 +186,7 @@ export function ApprovalCard({
           variant={isDual ? 'accent' : 'primary'}
           onClick={handleApprove}
           disabled={
-            pending !== null || (awaitingSecond && !secondAvailable)
+            pending !== null || executing || (awaitingSecond && !secondAvailable)
           }
           style={{ flex: 2 }}
         >

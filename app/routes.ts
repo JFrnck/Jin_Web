@@ -8,6 +8,7 @@ export default [
     route('chat', './routes/chat.tsx'),
     route('audit', './routes/audit.tsx'),
     route('budget', './routes/budget.tsx'),
+    route('autonomy', './routes/autonomy.tsx'),
     route('memory', './routes/memory.tsx'),
     route('orchestrator', './routes/orchestrator.tsx'),
     route('orchestrator/:runId', './routes/orchestrator.$runId.tsx'),
