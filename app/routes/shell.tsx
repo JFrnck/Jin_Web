@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router'
 import { ConnectionBadge } from '~/components/ConnectionBadge'
+import { AutonomyBanner } from '~/features/autonomy/AutonomyBanner'
 import { KillSwitchBanner } from '~/features/budget/KillSwitchBanner'
 
 const NAV_ITEMS = [
@@ -7,6 +8,7 @@ const NAV_ITEMS = [
   { to: '/hitl', label: 'Aprobar', end: false },
   { to: '/chat', label: 'Chat', end: false },
   { to: '/budget', label: 'Gasto', end: false },
+  { to: '/autonomy', label: 'Autonomía', end: false },
   { to: '/audit', label: 'Audit', end: false },
   { to: '/orchestrator', label: 'Board', end: false },
   { to: '/editor', label: 'Editor', end: false },
@@ -18,6 +20,7 @@ export default function Shell() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
       <KillSwitchBanner />
+      <AutonomyBanner />
 
       <header
         style={{
@@ -87,6 +90,7 @@ export default function Shell() {
           { to: '/hitl', label: 'Aprobar', end: false },
           { to: '/chat', label: 'Chat', end: false },
           { to: '/budget', label: 'Gasto', end: false },
+  { to: '/autonomy', label: 'Autonomía', end: false },
         ].map((item) => (
           <NavLink
             key={item.to}
