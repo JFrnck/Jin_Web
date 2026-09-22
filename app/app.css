@@ -194,9 +194,12 @@ button {
 
 /* Sin blur (ni el navegador lo soporta, o el usuario lo pidió): los tres
    niveles de cristal se resuelven como sólidos sobre el lienzo. Bordes e
-   insets se mantienen — la jerarquía no depende del blur. */
-@media (prefers-reduced-transparency: reduce),
-  not all and (backdrop-filter: blur(1px)) {
+   insets se mantienen — la jerarquía no depende del blur.
+   `backdrop-filter` NO es una media feature (rompía el build: lightningcss
+   rechaza `not all and (backdrop-filter: ...)` dentro de @media — es
+   @supports lo que detecta soporte de una propiedad), así que son dos
+   at-rules separadas y no una sola con coma. */
+@media (prefers-reduced-transparency: reduce) {
   :root {
     --glass-1: #1a100e;
     --glass-2: #161010;
@@ -205,6 +208,13 @@ button {
   * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+  }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  :root {
+    --glass-1: #1a100e;
+    --glass-2: #161010;
+    --glass-3: #2a1210;
   }
 }
 
