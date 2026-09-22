@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router'
+import { NavIcon, type NavIconKey } from './NavIcons'
 
 /**
  * Puerto de `Jin/design/JinNavItem.dc.html` (diseño v4 §05) a React Router
@@ -18,7 +19,7 @@ export function NavItem({
   to,
   end = false,
   label,
-  iconRadius,
+  icon,
   badge,
   variant,
   onClick,
@@ -26,8 +27,7 @@ export function NavItem({
   to: string
   end?: boolean
   label: string
-  /** Forma del icono-placeholder: '50%' círculo, '2-4px' cuadrado redondeado. */
-  iconRadius: string
+  icon: NavIconKey
   /** Contador de pendientes (p. ej. "Aprobar"). Ausente = sin badge. */
   badge?: number | undefined
   variant: NavItemVariant
@@ -46,18 +46,18 @@ export function NavItem({
       className={itemClass}
       aria-label={badge ? `${label}, ${badge} pendientes` : label}
     >
-      <span
-        className="jin-nav-item-icon"
-        style={{ borderRadius: iconRadius }}
-        aria-hidden="true"
-      />
-      {variant === 'mobile' ? (
-        <span className="jin-nav-item-label">{label}</span>
-      ) : (
-        label
-      )}
-      {badge !== undefined && badge > 0 && (
-        <span className={badgeClass}>{badge > 9 ? '9+' : badge}</span>
+      {({ isActive }) => (
+        <>
+          <NavIcon icon={icon} active={isActive} />
+          {variant === 'mobile' ? (
+            <span className="jin-nav-item-label">{label}</span>
+          ) : (
+            label
+          )}
+          {badge !== undefined && badge > 0 && (
+            <span className={badgeClass}>{badge > 9 ? '9+' : badge}</span>
+          )}
+        </>
       )}
     </NavLink>
   )

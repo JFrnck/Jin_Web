@@ -48,19 +48,23 @@
   --dim: #8a7b77;
   --dimmer: #6b5f5c;
 
-  /* Acento de marca — rojo SEÑAL. Reservado a riesgo irreversible
-     (dual-confirm) y a los ≤3 elementos de marca por pantalla. Nunca
-     decorativo. */
-  --accent: #f2654a;
-  --accent-hover: #ff7458;
-  --accent-text: #ffe3db;
+  /* Acento de marca — rojo SEÑAL, tono "lava" (croma alto, matiz corrido
+     hacia el naranja: antes 32°/.19, ahora 36°/.24 — más intenso y menos
+     "marrón apagado"). Reservado a riesgo irreversible (dual-confirm) y a
+     los ≤3 elementos de marca por pantalla. Nunca decorativo. */
+  --accent: oklch(0.64 0.24 36);
+  --accent-hover: oklch(0.7 0.22 36);
+  /* Texto de alerta/error sobre fondo oscuro — antes hardcodeado #FF8367
+     suelto en cada pantalla; ahora un solo token. */
+  --accent-text: oklch(0.75 0.19 38);
   --accent-on: #1a0705;
 
-  /* Ramp ordinal de riesgo HITL, oklch matiz fijo 32°, ΔL 0.08/escalón.
+  /* Ramp ordinal de riesgo HITL, mismo matiz que --accent (36°), croma
+     más alto que antes pero mismo ΔL 0.08/escalón (monótono, validado).
      `auto` no tiene color propio (ver .jin-risk-auto). */
-  --risk-notify: oklch(0.6 0.08 32);
-  --risk-confirm: oklch(0.68 0.12 32);
-  --risk-dual: oklch(0.68 0.19 32);
+  --risk-notify: oklch(0.6 0.13 36);
+  --risk-confirm: oklch(0.68 0.18 36);
+  --risk-dual: oklch(0.68 0.24 36);
 
   /* Ámbar — avisos que NO son un nivel HITL: "influido por", caducidad,
      autonomía relajada, presupuesto ≥80%. Fuera del ramp de riesgo a
@@ -675,15 +679,13 @@ button {
   border-radius: var(--radius-pill);
   background: var(--text);
 }
-.jin-nav-item-icon {
-  width: 18px;
-  height: 18px;
-  border: 1.5px solid currentColor;
-  background: transparent;
-}
-.jin-nav-item[aria-current='page'] .jin-nav-item-icon {
-  background: currentColor;
-  border-color: currentColor;
+/* El icono es un <svg> real (NavIcons.tsx) — hereda color por
+   `currentColor` y su propio prop `active` ya sube el grosor del trazo,
+   así que acá solo hace falta que no se achique en el layout horizontal
+   del sidebar. */
+.jin-nav-item svg,
+.jin-nav-desktop-item svg {
+  flex-shrink: 0;
 }
 .jin-nav-item-label {
   font-size: 10.5px;
@@ -729,13 +731,6 @@ button {
 }
 .jin-nav-desktop-item:not([aria-current='page']) {
   border: 1px solid transparent;
-}
-.jin-nav-desktop-item .jin-nav-item-icon {
-  width: 15px;
-  height: 15px;
-}
-.jin-nav-desktop-item[aria-current='page'] .jin-nav-item-icon {
-  background: currentColor;
 }
 .jin-nav-desktop-item-badge {
   margin-left: auto;

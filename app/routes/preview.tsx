@@ -48,7 +48,7 @@ export default function Preview() {
       </header>
 
       {stopError && (
-        <p style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--accent-text)' }}>
           ⚠ No se pudo detener: {stopError}
         </p>
       )}

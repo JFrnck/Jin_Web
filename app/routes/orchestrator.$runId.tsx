@@ -63,7 +63,7 @@ export default function OrchestratorRun() {
         <p className="jin-muted mono" style={{ fontSize: 12, margin: '4px 0 0' }}>
           {agents.size} agentes · {tickets.length} tickets
           {openConflicts.length > 0 && (
-            <span style={{ color: '#FF8367' }}>
+            <span style={{ color: 'var(--accent-text)' }}>
               {' '}
               · {openConflicts.length} conflicto{openConflicts.length > 1 ? 's' : ''} sin resolver
             </span>

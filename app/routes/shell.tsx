@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
 import { ConnectionBadge } from '~/components/ConnectionBadge'
+import { NavIcon } from '~/components/NavIcons'
 import { NavItem } from '~/components/NavItem'
 import { NavSheet } from '~/components/NavSheet'
 import { AutonomyBanner } from '~/features/autonomy/AutonomyBanner'
@@ -11,19 +12,19 @@ import { useApprovals } from '~/features/hitl/useApprovals'
 // los 5 de la hoja móvil comparten esta única fuente: agregar una sección
 // nueva no debe requerir tocar tres listas por separado.
 const PRIMARY_NAV = [
-  { to: '/', label: 'Overview', end: true, iconRadius: '4px', badged: false },
-  { to: '/hitl', label: 'Aprobar', end: false, iconRadius: '4px', badged: true },
-  { to: '/chat', label: 'Chat', end: false, iconRadius: '50%', badged: false },
-  { to: '/budget', label: 'Gasto', end: false, iconRadius: '3px', badged: false },
+  { to: '/', label: 'Overview', end: true, icon: 'overview', badged: false },
+  { to: '/hitl', label: 'Aprobar', end: false, icon: 'approve', badged: true },
+  { to: '/chat', label: 'Chat', end: false, icon: 'chat', badged: false },
+  { to: '/budget', label: 'Gasto', end: false, icon: 'budget', badged: false },
 ] as const
 
 const DESKTOP_EXTRA_NAV = [
-  { to: '/autonomy', label: 'Autonomía', end: false, iconRadius: '3px' },
-  { to: '/audit', label: 'Audit', end: false, iconRadius: '50%' },
-  { to: '/orchestrator', label: 'Board', end: false, iconRadius: '3px' },
-  { to: '/preview', label: 'Apps', end: false, iconRadius: '3px' },
-  { to: '/memory', label: 'Memoria', end: false, iconRadius: '50%' },
-  { to: '/editor', label: 'Editor', end: false, iconRadius: '3px' },
+  { to: '/autonomy', label: 'Autonomía', end: false, icon: 'autonomy' },
+  { to: '/audit', label: 'Audit', end: false, icon: 'audit' },
+  { to: '/orchestrator', label: 'Board', end: false, icon: 'board' },
+  { to: '/preview', label: 'Apps', end: false, icon: 'apps' },
+  { to: '/memory', label: 'Memoria', end: false, icon: 'memory' },
+  { to: '/editor', label: 'Editor', end: false, icon: 'editor' },
 ] as const
 
 export default function Shell() {
@@ -87,7 +88,7 @@ export default function Shell() {
               to={item.to}
               end={item.end}
               label={item.label}
-              iconRadius={item.iconRadius}
+              icon={item.icon}
               variant="desktop"
               badge={item.badged ? pendingCount : undefined}
             />
@@ -105,7 +106,7 @@ export default function Shell() {
               to={item.to}
               end={item.end}
               label={item.label}
-              iconRadius={item.iconRadius}
+              icon={item.icon}
               variant="desktop"
             />
           ))}
@@ -127,7 +128,7 @@ export default function Shell() {
             to={item.to}
             end={item.end}
             label={item.label}
-            iconRadius={item.iconRadius}
+            icon={item.icon}
             variant="mobile"
             badge={item.badged ? pendingCount : undefined}
           />
@@ -141,11 +142,7 @@ export default function Shell() {
           aria-current={onSecondaryScreen ? 'page' : undefined}
           onClick={() => setSheetOpen((v) => !v)}
         >
-          <span
-            className="jin-nav-item-icon"
-            style={{ borderRadius: '2px' }}
-            aria-hidden="true"
-          />
+          <NavIcon icon="more" active={onSecondaryScreen} />
           <span className="jin-nav-item-label">Más</span>
         </button>
       </nav>

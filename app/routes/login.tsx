@@ -132,7 +132,7 @@ export default function Login() {
             error no debe expulsarte del formulario ni hacer que retipees
             a ciegas mientras la tarjeta tiembla. */}
         {error && (
-          <p style={{ color: '#FF8367', margin: 0, fontSize: 12.5 }}>✕ {error}</p>
+          <p style={{ color: 'var(--accent-text)', margin: 0, fontSize: 12.5 }}>✕ {error}</p>
         )}
 
         <button
