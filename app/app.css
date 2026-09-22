@@ -641,7 +641,8 @@ button {
     0 -16px 40px -22px rgba(0, 0, 0, 0.9);
 }
 
-.jin-nav-item {
+.jin-nav-item,
+.jin-nav-item:visited {
   position: relative;
   appearance: none;
   -webkit-appearance: none;
@@ -664,7 +665,13 @@ button {
 .jin-nav-item:active {
   transform: scale(0.96);
 }
-.jin-nav-item[aria-current='page'] {
+/* NavLink renderiza un <a> real: sin este `:visited` explícito, el color
+   de "visitado" del navegador (mayor especificidad que una clase sola,
+   `a:visited` cuenta como elemento+pseudoclase) le gana a `--dim` en
+   cuanto el owner entra a esa sección una vez -- se vio literalmente así,
+   "Aprobar" quedó celeste después de visitar /hitl. */
+.jin-nav-item[aria-current='page'],
+.jin-nav-item[aria-current='page']:visited {
   background: rgba(255, 236, 230, 0.1);
   border-color: var(--hairline-strong);
   color: var(--text);
@@ -713,7 +720,8 @@ button {
 }
 
 /* Sidebar de escritorio — mismo NavItem, layout horizontal compacto */
-.jin-nav-desktop-item {
+.jin-nav-desktop-item,
+.jin-nav-desktop-item:visited {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -723,7 +731,8 @@ button {
   text-decoration: none;
   font-size: 13.5px;
 }
-.jin-nav-desktop-item[aria-current='page'] {
+.jin-nav-desktop-item[aria-current='page'],
+.jin-nav-desktop-item[aria-current='page']:visited {
   background: rgba(255, 236, 230, 0.09);
   border: 1px solid var(--hairline-strong);
   color: var(--text);
@@ -781,7 +790,8 @@ button {
   grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
 }
-.jin-nav-sheet-item {
+.jin-nav-sheet-item,
+.jin-nav-sheet-item:visited {
   min-height: 56px;
   border-radius: var(--radius-md);
   padding: var(--space-3);
