@@ -671,6 +671,21 @@ button {
 .jin-nav-item:active {
   transform: scale(0.96);
 }
+/* Hover — el naranja de la paleta. Los ítems del nav son <a> reales y no
+   tenían regla propia de hover, así que heredaban la global
+   `a:hover { color: var(--link-hover) }` = #8fd6e6, un celeste de link
+   ajeno al tema. El ítem activo se excluye: ya está destacado en blanco
+   con su píldora, no debe cambiar al pasar el cursor.
+   `@media (hover: hover)` para que en táctil el estado no quede pegado
+   después de un tap. */
+@media (hover: hover) {
+  .jin-nav-item:not([aria-current='page']):hover,
+  .jin-nav-desktop-item:not([aria-current='page']):hover,
+  .jin-nav-sheet-item:not([aria-disabled='true']):hover {
+    color: var(--accent-text);
+    background: rgba(255, 236, 230, 0.06);
+  }
+}
 /* NavLink renderiza un <a> real, y esto NO es el bug simple de
    especificidad que parecía: los navegadores prohíben `var(--x)` dentro
    de una regla `:visited` -- es una protección de privacidad a propósito
