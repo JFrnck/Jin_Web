@@ -40,7 +40,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           name="viewport"
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
-        <meta name="theme-color" content="#08090B" />
+        <meta name="theme-color" content="#0C0706" />
         <meta name="color-scheme" content="dark" />
         <title>Jin</title>
         <Meta />

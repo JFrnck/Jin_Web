@@ -60,26 +60,42 @@ function UnpauseButton() {
     <div style={{ display: 'grid', gap: 6 }}>
       <button
         type="button"
-        className="jin-btn jin-btn--accent"
         onMouseDown={start}
         onMouseUp={clear}
         onMouseLeave={clear}
         onTouchStart={start}
         onTouchEnd={clear}
         disabled={pending}
+        data-pending={pending || undefined}
         style={{
           position: 'relative',
           overflow: 'hidden',
           width: '100%',
+          minHeight: 52,
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid rgba(242,101,74,.5)',
+          background: 'rgba(242,101,74,.10)',
+          color: '#FFE3DB',
+          fontFamily: 'var(--font-sans)',
+          fontWeight: 600,
+          fontSize: 14,
+          cursor: pending ? 'wait' : 'pointer',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          touchAction: 'none',
         }}
       >
         <span
+          aria-hidden="true"
           style={{
             position: 'absolute',
-            inset: 0,
-            background: 'rgba(255,255,255,0.25)',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            background:
+              'linear-gradient(90deg, rgba(242,101,74,.55), rgba(242,101,74,.85))',
             width: `${progress * 100}%`,
-            transition: progress === 0 ? 'width 150ms ease-out' : 'none',
+            transition: progress === 0 ? 'width 180ms ease-out' : 'none',
           }}
         />
         <span style={{ position: 'relative' }}>
@@ -87,7 +103,7 @@ function UnpauseButton() {
         </span>
       </button>
       {error && (
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
+        <p style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
           ⚠ No se reanudó: {error}
         </p>
       )}
@@ -137,21 +153,11 @@ export default function Budget() {
           {data.dailyLimitTokens.toLocaleString('es-PE')}
         </p>
         <div
-          style={{
-            marginTop: 12,
-            height: 6,
-            borderRadius: 999,
-            background: 'var(--sunken)',
-            overflow: 'hidden',
-          }}
+          className="jin-progress-track"
+          data-level={ratioPct >= 100 ? 'danger' : ratioPct >= 80 ? 'warn' : 'normal'}
+          style={{ marginTop: 12 }}
         >
-          <div
-            style={{
-              width: `${Math.min(100, ratioPct)}%`,
-              height: '100%',
-              background: ratioPct >= 100 ? 'var(--risk-dual)' : 'var(--risk-confirm)',
-            }}
-          />
+          <div className="jin-progress-fill" style={{ width: `${Math.min(100, ratioPct)}%` }} />
         </div>
       </div>
 
@@ -174,7 +180,7 @@ export default function Budget() {
 
       {data.killSwitchActive && (
         <div className="jin-card jin-card--dual">
-          <p style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--risk-dual)' }}>
+          <p style={{ margin: '0 0 4px', fontWeight: 700, color: '#FFE3DB' }}>
             KILL SWITCH ACTIVO
           </p>
           {data.killSwitch.reason && (

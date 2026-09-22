@@ -45,8 +45,8 @@ export default function Memory() {
           placeholder="cómo prefiero que me agenden las asesorías"
           style={{
             flex: 1,
-            background: 'var(--sunken)',
-            border: '1px solid var(--sunken)',
+            background: 'rgba(0,0,0,.32)',
+            border: '1px solid var(--hairline-strong)',
             borderRadius: 'var(--radius-md)',
             color: 'var(--text)',
             padding: 'var(--space-3)',
