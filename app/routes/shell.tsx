@@ -1,22 +1,46 @@
-import { NavLink, Outlet } from 'react-router'
+import { useRef, useState } from 'react'
+import { Outlet, useLocation } from 'react-router'
 import { ConnectionBadge } from '~/components/ConnectionBadge'
+import { NavItem } from '~/components/NavItem'
+import { NavSheet } from '~/components/NavSheet'
 import { AutonomyBanner } from '~/features/autonomy/AutonomyBanner'
 import { KillSwitchBanner } from '~/features/budget/KillSwitchBanner'
+import { useApprovals } from '~/features/hitl/useApprovals'
 
-const NAV_ITEMS = [
-  { to: '/', label: 'Overview', end: true },
-  { to: '/hitl', label: 'Aprobar', end: false },
-  { to: '/chat', label: 'Chat', end: false },
-  { to: '/budget', label: 'Gasto', end: false },
-  { to: '/autonomy', label: 'Autonomía', end: false },
-  { to: '/audit', label: 'Audit', end: false },
-  { to: '/orchestrator', label: 'Board', end: false },
-  { to: '/editor', label: 'Editor', end: false },
-  { to: '/preview', label: 'Apps', end: false },
-  { to: '/memory', label: 'Memoria', end: false },
-]
+// Los 4 fijos del nav (más "Más" abajo) y los 6 del sidebar de escritorio +
+// los 5 de la hoja móvil comparten esta única fuente: agregar una sección
+// nueva no debe requerir tocar tres listas por separado.
+const PRIMARY_NAV = [
+  { to: '/', label: 'Overview', end: true, iconRadius: '4px', badged: false },
+  { to: '/hitl', label: 'Aprobar', end: false, iconRadius: '4px', badged: true },
+  { to: '/chat', label: 'Chat', end: false, iconRadius: '50%', badged: false },
+  { to: '/budget', label: 'Gasto', end: false, iconRadius: '3px', badged: false },
+] as const
+
+const DESKTOP_EXTRA_NAV = [
+  { to: '/autonomy', label: 'Autonomía', end: false, iconRadius: '3px' },
+  { to: '/audit', label: 'Audit', end: false, iconRadius: '50%' },
+  { to: '/orchestrator', label: 'Board', end: false, iconRadius: '3px' },
+  { to: '/preview', label: 'Apps', end: false, iconRadius: '3px' },
+  { to: '/memory', label: 'Memoria', end: false, iconRadius: '50%' },
+  { to: '/editor', label: 'Editor', end: false, iconRadius: '3px' },
+] as const
 
 export default function Shell() {
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const moreButtonRef = useRef<HTMLButtonElement>(null)
+  const approvals = useApprovals()
+  const pendingCount = approvals.data?.length ?? 0
+  const location = useLocation()
+  // Si la pantalla actual es una de las que vive en la hoja "Más" (o
+  // Editor), ningún ítem fijo se marca activo — así que "Más" toma ese
+  // lugar. Sin esto, estar en /audit deja el nav entero sin nada
+  // resaltado, que es el mismo bug de "no sé dónde estoy" que el rediseño
+  // vino a corregir.
+  const onSecondaryScreen = [...DESKTOP_EXTRA_NAV].some((item) =>
+    location.pathname.startsWith(item.to),
+  )
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
       <KillSwitchBanner />
@@ -28,10 +52,16 @@ export default function Shell() {
           alignItems: 'center',
           justifyContent: 'space-between',
           padding: 'var(--space-3) var(--space-4)',
-          borderBottom: '1px solid var(--sunken)',
+          background: 'var(--glass-2)',
+          backdropFilter: 'blur(28px) saturate(1.5)',
+          WebkitBackdropFilter: 'blur(28px) saturate(1.5)',
+          borderBottom: '1px solid var(--hairline)',
         }}
       >
-        <span className="mono" style={{ fontWeight: 700 }}>
+        <span
+          className="mono"
+          style={{ fontWeight: 600, letterSpacing: '0.04em', color: '#FBF3F0' }}
+        >
           JIN
         </span>
         <ConnectionBadge />
@@ -43,29 +73,41 @@ export default function Shell() {
           style={{
             width: 200,
             flexShrink: 0,
-            borderRight: '1px solid var(--sunken)',
+            borderRight: '1px solid var(--hairline)',
             padding: 'var(--space-3)',
             display: 'flex',
             flexDirection: 'column',
-            gap: 4,
+            gap: 3,
           }}
           className="jin-nav-desktop"
         >
-          {NAV_ITEMS.map((item) => (
-            <NavLink
+          {PRIMARY_NAV.map((item) => (
+            <NavItem
               key={item.to}
               to={item.to}
               end={item.end}
-              style={({ isActive }) => ({
-                padding: 'var(--space-2) var(--space-3)',
-                borderRadius: 'var(--radius-md)',
-                color: isActive ? 'var(--text)' : 'var(--muted)',
-                background: isActive ? 'var(--surface)' : 'transparent',
-                fontWeight: isActive ? 600 : 400,
-              })}
-            >
-              {item.label}
-            </NavLink>
+              label={item.label}
+              iconRadius={item.iconRadius}
+              variant="desktop"
+              badge={item.badged ? pendingCount : undefined}
+            />
+          ))}
+          <div
+            style={{
+              height: 1,
+              background: 'var(--hairline)',
+              margin: 'var(--space-2) 0',
+            }}
+          />
+          {DESKTOP_EXTRA_NAV.map((item) => (
+            <NavItem
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              label={item.label}
+              iconRadius={item.iconRadius}
+              variant="desktop"
+            />
           ))}
         </nav>
 
@@ -76,36 +118,43 @@ export default function Shell() {
 
       <nav
         aria-label="Navegación principal (móvil)"
-        className="jin-nav-mobile"
-        style={{
-          display: 'none',
-          borderTop: '1px solid var(--sunken)',
-          padding: 'var(--space-2) var(--space-2)',
-          paddingBottom: 'calc(var(--space-2) + env(safe-area-inset-bottom))',
-          justifyContent: 'space-around',
-        }}
+        className="jin-nav-mobile jin-nav-mobile-bar"
+        style={{ display: 'none' }}
       >
-        {[
-          { to: '/', label: 'Overview', end: true },
-          { to: '/hitl', label: 'Aprobar', end: false },
-          { to: '/chat', label: 'Chat', end: false },
-          { to: '/budget', label: 'Gasto', end: false },
-  { to: '/autonomy', label: 'Autonomía', end: false },
-        ].map((item) => (
-          <NavLink
+        {PRIMARY_NAV.map((item) => (
+          <NavItem
             key={item.to}
             to={item.to}
             end={item.end}
-            style={({ isActive }) => ({
-              fontSize: 12,
-              color: isActive ? 'var(--text)' : 'var(--muted)',
-              padding: 'var(--space-1) var(--space-2)',
-            })}
-          >
-            {item.label}
-          </NavLink>
+            label={item.label}
+            iconRadius={item.iconRadius}
+            variant="mobile"
+            badge={item.badged ? pendingCount : undefined}
+          />
         ))}
+        <button
+          ref={moreButtonRef}
+          type="button"
+          className="jin-nav-item"
+          aria-expanded={sheetOpen}
+          aria-haspopup="dialog"
+          aria-current={onSecondaryScreen ? 'page' : undefined}
+          onClick={() => setSheetOpen((v) => !v)}
+        >
+          <span
+            className="jin-nav-item-icon"
+            style={{ borderRadius: '2px' }}
+            aria-hidden="true"
+          />
+          <span className="jin-nav-item-label">Más</span>
+        </button>
       </nav>
+
+      <NavSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        triggerRef={moreButtonRef}
+      />
     </div>
   )
 }

@@ -27,7 +27,7 @@ export function PlanProgress({ steps }: { steps: readonly AgentStep[] }) {
               gap: 8,
               color:
                 step.status === 'failed'
-                  ? 'var(--risk-confirm)'
+                  ? '#FF8367'
                   : step.status === 'pending'
                     ? 'var(--muted)'
                     : 'var(--text)',

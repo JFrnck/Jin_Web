@@ -10,14 +10,24 @@ export function EmptyState({
   action?: ReactNode
 }) {
   return (
-    <div className="jin-card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-      <p style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>{title}</p>
+    <div className="jin-empty">
+      <div
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: '50%',
+          border: '1px solid var(--hairline-strong)',
+        }}
+      />
+      <p style={{ fontSize: 15, fontWeight: 600, margin: 0, color: 'var(--muted)' }}>
+        {title}
+      </p>
       {detail && (
-        <p className="jin-muted" style={{ marginTop: 8 }}>
+        <p className="jin-dim" style={{ margin: 0, fontSize: 13 }}>
           {detail}
         </p>
       )}
-      {action && <div style={{ marginTop: 16 }}>{action}</div>}
+      {action && <div style={{ marginTop: 8 }}>{action}</div>}
     </div>
   )
 }

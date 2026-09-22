@@ -52,6 +52,10 @@ export function ApprovalCard({
 }) {
   const [pending, setPending] = useState<'approve' | 'reject' | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  // Abierto por defecto (diseño v4 §7.3): es el "payload real", no un
+  // detalle que hay que ir a buscar. El toggle existe para pantallas
+  // chicas, no para esconder información por defecto.
+  const [payloadOpen, setPayloadOpen] = useState(true)
   const [, forceTick] = useState(0)
   const isDual = approval.level === 'dual-confirm'
   const executing = approval.executingAt !== null
@@ -97,10 +101,21 @@ export function ApprovalCard({
   }
 
   const expiry = timeUntil(approval.escalatedAt ?? null)
+  const isWaiting = awaitingSecond && !secondAvailable
   const secondWaitLabel =
-    awaitingSecond && !secondAvailable && approval.availableAt
-      ? timeUntil(approval.availableAt)
-      : null
+    isWaiting && approval.availableAt ? timeUntil(approval.availableAt) : null
+
+  // Relleno de progreso sobre el propio botón durante la espera de 30s
+  // del dual-confirm (diseño v4 §7.3, primitivo del botón de aprobación):
+  // deja ver cuánto falta sin un temporizador aparte.
+  let waitProgressPct = 0
+  if (isWaiting && approval.firstApprovedAt && approval.availableAt) {
+    const start = new Date(approval.firstApprovedAt).getTime()
+    const end = new Date(approval.availableAt).getTime()
+    const total = end - start
+    waitProgressPct =
+      total > 0 ? Math.min(100, Math.max(0, ((Date.now() - start) / total) * 100)) : 0
+  }
 
   return (
     <article
@@ -132,18 +147,46 @@ export function ApprovalCard({
             </p>
           )}
           {approval.externalInputsSummary && (
-            <p className="jin-dim" style={{ fontSize: 13, margin: 0 }}>
-              Influido por: <span className="mono">{approval.externalInputsSummary}</span>
-            </p>
+            <div className="jin-callout-amber">
+              <span className="jin-callout-amber-label">⚠ INFLUIDO POR</span>
+              <span className="mono" style={{ fontSize: 13.5 }}>
+                {approval.externalInputsSummary}
+              </span>
+            </div>
           )}
         </div>
       )}
 
-      <div style={{ borderTop: '1px solid var(--sunken)', paddingTop: 'var(--space-2)' }}>
-        <p className="mono jin-dim" style={{ fontSize: 11, margin: '0 0 6px' }}>
-          PAYLOAD REAL
-        </p>
-        <PayloadDump payload={approval.payload} />
+      <div style={{ borderTop: '1px solid var(--hairline)', paddingTop: 'var(--space-2)' }}>
+        <button
+          type="button"
+          onClick={() => setPayloadOpen((v) => !v)}
+          style={{
+            width: '100%',
+            minHeight: 32,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: 0,
+            background: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <span className="mono jin-dim" style={{ fontSize: 11, letterSpacing: '0.08em' }}>
+            PAYLOAD REAL
+          </span>
+          <span style={{ flex: 1 }} />
+          <span className="mono jin-muted" style={{ fontSize: 11.5 }}>
+            {payloadOpen ? 'Plegar ▴' : 'Ver ▾'}
+          </span>
+        </button>
+        {payloadOpen && (
+          <div style={{ maxHeight: 186, overflow: 'auto', marginTop: 6 }}>
+            <PayloadDump payload={approval.payload} />
+          </div>
+        )}
       </div>
 
       {isDual && (
@@ -156,7 +199,7 @@ export function ApprovalCard({
           ocurrió y no se reintenta sola: hay que decírselo, no dejar al owner
           creyendo que salió. */}
       {approval.executionError && (
-        <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
+        <p role="alert" style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
           ⚠ La última aprobación NO se ejecutó: {approval.executionError}. No se reintenta
           sola — aprobala de nuevo si querés reintentar.
         </p>
@@ -168,7 +211,7 @@ export function ApprovalCard({
       )}
 
       {actionError && (
-        <p style={{ margin: 0, fontSize: 13, color: 'var(--risk-confirm)' }}>
+        <p style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
           ⚠ No se completó: {actionError}
         </p>
       )}
@@ -178,6 +221,7 @@ export function ApprovalCard({
           variant="danger"
           onClick={handleReject}
           disabled={pending !== null || executing}
+          data-pending={pending === 'reject' || undefined}
           style={{ flex: 1 }}
         >
           Rechazar
@@ -188,19 +232,53 @@ export function ApprovalCard({
           disabled={
             pending !== null || executing || (awaitingSecond && !secondAvailable)
           }
-          style={{ flex: 2 }}
+          data-pending={pending === 'approve' || undefined}
+          style={{
+            flex: 2,
+            position: 'relative',
+            overflow: 'hidden',
+            // Mientras se espera el segundo paso, el botón muestra ámbar
+            // (no el rojo de "listo para actuar" ni el verde de éxito) —
+            // es una espera deliberada, no una confirmación ya lista.
+            ...(isWaiting
+              ? {
+                  color: 'var(--amber)',
+                  background: 'rgba(232,192,122,.10)',
+                  borderColor: 'rgba(232,192,122,.45)',
+                }
+              : {}),
+          }}
         >
-          {pending === 'approve'
-            ? 'Aprobando…'
-            : awaitingSecond
-              ? secondAvailable
-                ? 'Confirmar (2/2)'
-                : `Espera ${secondWaitLabel}`
-              : isDual
-                ? 'Aprobar (1/2)'
-                : 'Aprobar'}
+          {isWaiting && (
+            <span
+              aria-hidden="true"
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(232,192,122,.18)',
+                width: `${waitProgressPct}%`,
+                transition: 'width 1000ms linear',
+              }}
+            />
+          )}
+          <span style={{ position: 'relative' }}>
+            {pending === 'approve'
+              ? 'Aprobando…'
+              : awaitingSecond
+                ? secondAvailable
+                  ? 'Confirmar (2/2)'
+                  : `Espera ${secondWaitLabel}`
+                : isDual
+                  ? 'Aprobar (1/2)'
+                  : 'Aprobar'}
+          </span>
         </Button>
       </div>
+      {isWaiting && (
+        <p className="jin-amber" style={{ margin: 0, fontSize: 12.5, textAlign: 'center' }}>
+          La espera es deliberada: relee el payload antes de confirmar.
+        </p>
+      )}
     </article>
   )
 }

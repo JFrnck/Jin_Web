@@ -57,9 +57,7 @@ export default function Chat() {
 
         {turns.map((turn, index) => (
           <div key={index} style={{ display: 'grid', gap: 'var(--space-2)' }}>
-            <div className="jin-card" style={{ background: 'var(--sunken)' }}>
-              {turn.objective}
-            </div>
+            <div className="jin-card--sunken">{turn.objective}</div>
             {turn.result && (
               <>
                 {turn.result.plan.steps.length > 0 && (
@@ -68,11 +66,7 @@ export default function Chat() {
                 <div className="jin-card">{turn.result.finalResponse}</div>
               </>
             )}
-            {turn.error && (
-              <div className="jin-card" style={{ color: 'var(--risk-confirm)' }}>
-                {turn.error}
-              </div>
-            )}
+            {turn.error && <div className="jin-callout-danger">{turn.error}</div>}
             {!turn.result && !turn.error && (
               <p className="jin-dim mono" style={{ fontSize: 12 }}>
                 trabajando…
@@ -89,8 +83,8 @@ export default function Chat() {
           placeholder="Pide un objetivo…"
           style={{
             flex: 1,
-            background: 'var(--sunken)',
-            border: '1px solid var(--sunken)',
+            background: 'rgba(0,0,0,.32)',
+            border: '1px solid var(--hairline-strong)',
             borderRadius: 'var(--radius-md)',
             color: 'var(--text)',
             padding: 'var(--space-3)',

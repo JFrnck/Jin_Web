@@ -38,30 +38,28 @@ export default function Audit() {
 
       {data && data.items.length > 0 && (
         <div style={{ overflowX: 'auto' }}>
-          <table className="mono" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+          <table className="jin-table">
             <thead>
-              <tr style={{ textAlign: 'left', color: 'var(--muted)' }}>
-                <th style={{ padding: '6px 8px' }}>momento</th>
-                <th style={{ padding: '6px 8px' }}>nivel</th>
-                <th style={{ padding: '6px 8px' }}>herramienta</th>
-                <th style={{ padding: '6px 8px' }}>actor</th>
-                <th style={{ padding: '6px 8px' }}>estado</th>
-                <th style={{ padding: '6px 8px' }}>hash</th>
+              <tr>
+                <th>momento</th>
+                <th>nivel</th>
+                <th>herramienta</th>
+                <th>actor</th>
+                <th>estado</th>
+                <th>hash</th>
               </tr>
             </thead>
             <tbody>
               {data.items.map((entry) => (
-                <tr key={entry.id} style={{ borderTop: '1px solid var(--sunken)' }}>
-                  <td style={{ padding: '6px 8px', whiteSpace: 'nowrap' }}>
+                <tr key={entry.id}>
+                  <td style={{ whiteSpace: 'nowrap' }}>
                     {new Date(entry.timestamp).toLocaleTimeString('es-PE')}
                   </td>
-                  <td style={{ padding: '6px 8px' }}>{entry.actionType}</td>
-                  <td style={{ padding: '6px 8px' }}>{entry.toolName ?? '—'}</td>
-                  <td style={{ padding: '6px 8px' }}>{entry.actor}</td>
-                  <td style={{ padding: '6px 8px' }}>{entry.approvalStatus}</td>
-                  <td style={{ padding: '6px 8px', color: 'var(--dim)' }}>
-                    {entry.currentHash.slice(0, 8)}…
-                  </td>
+                  <td>{entry.actionType}</td>
+                  <td>{entry.toolName ?? '—'}</td>
+                  <td>{entry.actor}</td>
+                  <td>{entry.approvalStatus}</td>
+                  <td className="jin-dim">{entry.currentHash.slice(0, 8)}…</td>
                 </tr>
               ))}
             </tbody>
