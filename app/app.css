@@ -148,6 +148,13 @@ a {
 a:hover {
   color: var(--link-hover);
 }
+/* Mismo motivo que en el nav (ver .jin-nav-item:visited): sin esto, un
+   link real como "Reintentar" cambiaría de color solo por haber sido
+   clickeado -- el navegador aplica su propio color de visitado por
+   defecto salvo que se le diga explícitamente, y var() no sirve ahí. */
+a:visited {
+  color: #5bb8ce; /* = --link */
+}
 
 code,
 .mono {
@@ -641,8 +648,7 @@ button {
     0 -16px 40px -22px rgba(0, 0, 0, 0.9);
 }
 
-.jin-nav-item,
-.jin-nav-item:visited {
+.jin-nav-item {
   position: relative;
   appearance: none;
   -webkit-appearance: none;
@@ -665,17 +671,30 @@ button {
 .jin-nav-item:active {
   transform: scale(0.96);
 }
-/* NavLink renderiza un <a> real: sin este `:visited` explícito, el color
-   de "visitado" del navegador (mayor especificidad que una clase sola,
-   `a:visited` cuenta como elemento+pseudoclase) le gana a `--dim` en
-   cuanto el owner entra a esa sección una vez -- se vio literalmente así,
-   "Aprobar" quedó celeste después de visitar /hitl. */
+/* NavLink renderiza un <a> real, y esto NO es el bug simple de
+   especificidad que parecía: los navegadores prohíben `var(--x)` dentro
+   de una regla `:visited` -- es una protección de privacidad a propósito
+   (evita que CSS pueda filtrar el historial), y la declaración se
+   descarta en silencio en vez de fallar. El intento anterior
+   (`.jin-nav-item:visited { color: var(--dim); }`) por eso nunca hizo
+   nada: el navegador la tiró y cayó de vuelta al `a { color: var(--link) }`
+   de más arriba (celeste). Por la misma razón, `getComputedStyle` (JS, y
+   el inspector del navegador) SIEMPRE informa el color de no-visitado,
+   así que esto tampoco se puede verificar leyendo el color computado --
+   hay que mirar el píxel real. El fix real: valor hex LITERAL, no var(),
+   solo dentro de `:visited`. */
+.jin-nav-item:visited {
+  color: #8a7b77; /* = --dim */
+}
 .jin-nav-item[aria-current='page'],
 .jin-nav-item[aria-current='page']:visited {
   background: rgba(255, 236, 230, 0.1);
   border-color: var(--hairline-strong);
   color: var(--text);
   box-shadow: inset 0 1px 0 rgba(255, 232, 224, 0.1);
+}
+.jin-nav-item[aria-current='page']:visited {
+  color: #f5ebe8; /* = --text, literal por la misma razón */
 }
 .jin-nav-item[aria-current='page']::before {
   content: '';
@@ -720,8 +739,7 @@ button {
 }
 
 /* Sidebar de escritorio — mismo NavItem, layout horizontal compacto */
-.jin-nav-desktop-item,
-.jin-nav-desktop-item:visited {
+.jin-nav-desktop-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -731,12 +749,20 @@ button {
   text-decoration: none;
   font-size: 13.5px;
 }
+/* var() no funciona dentro de :visited (ver comentario junto a
+   .jin-nav-item:visited más arriba) -- hex literal a propósito. */
+.jin-nav-desktop-item:visited {
+  color: #8a7b77; /* = --dim */
+}
 .jin-nav-desktop-item[aria-current='page'],
 .jin-nav-desktop-item[aria-current='page']:visited {
   background: rgba(255, 236, 230, 0.09);
   border: 1px solid var(--hairline-strong);
   color: var(--text);
   font-weight: 600;
+}
+.jin-nav-desktop-item[aria-current='page']:visited {
+  color: #f5ebe8; /* = --text */
 }
 .jin-nav-desktop-item:not([aria-current='page']) {
   border: 1px solid transparent;
@@ -790,8 +816,7 @@ button {
   grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
 }
-.jin-nav-sheet-item,
-.jin-nav-sheet-item:visited {
+.jin-nav-sheet-item {
   min-height: 56px;
   border-radius: var(--radius-md);
   padding: var(--space-3);
@@ -804,6 +829,10 @@ button {
   text-decoration: none;
   font-size: 13px;
   font-weight: 500;
+}
+/* var() no funciona dentro de :visited -- hex literal a propósito. */
+.jin-nav-sheet-item:visited {
+  color: #b9a9a5; /* = --muted */
 }
 .jin-nav-sheet-item[aria-disabled='true'] {
   background: rgba(255, 236, 230, 0.03);
