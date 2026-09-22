@@ -37,32 +37,86 @@ jobs:
       - name: Check for uncommitted API types changes
         run: git diff --exit-code -- app/lib/api-types.ts
 
-  deploy:
-    needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  # Mismo criterio que Jin_Core (docs/runbooks/STATUS_DEPLOY.md): un job que
+  # solo compila y publica NUNCA ejecuta la imagen. De hecho el Dockerfile de
+  # este repo falló dos builds locales antes de llegar acá -- pnpm-workspace.yaml
+  # (donde vive el override de dompurify) sin copiar antes de `pnpm install
+  # --frozen-lockfile`, y sin .dockerignore, `COPY . .` pisaba el
+  # node_modules recién instalado con el de macOS del host, abortando
+  # `pnpm run build`. Ninguno de los dos lo hubiera atrapado un job que solo
+  # construye y empuja sin correr el contenedor.
+  container-smoke:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      deployments: write
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build image (solo para el smoke test)
+        uses: docker/build-push-action@v6
         with:
-          node-version-file: '.nvmrc'
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
+          context: .
+          load: true
+          push: false
+          tags: jin-web:smoke
+      - name: Arrancar el contenedor y verificar rutas clave
+        run: |
+          docker run -d --name jin-web-smoke -p 8080:8080 jin-web:smoke
+          for i in $(seq 1 20); do
+            if curl -fsS http://localhost:8080/ > /dev/null; then
+              echo "smoke OK: / respondió 200"
+              break
+            fi
+            if [ "$(docker inspect -f '{{.State.Running}}' jin-web-smoke)" != "true" ]; then
+              echo "el contenedor murió antes de responder"
+              docker logs jin-web-smoke
+              exit 1
+            fi
+            sleep 1
+          done
+          # SPA fallback (nginx try_files): una ruta client-side como /hitl
+          # tiene que servir index.html (200), no 404 -- si algún día se
+          # rompe nginx.conf, refrescar en cualquier ruta que no sea / se
+          # rompe en producción y nada más en este CI lo detecta.
+          status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/hitl)
+          if [ "$status" != "200" ]; then
+            echo "FALLO: /hitl respondió $status, se esperaba 200 (SPA fallback roto)"
+            docker logs jin-web-smoke
+            exit 1
+          fi
+          echo "smoke OK: /hitl (SPA fallback) respondió 200"
+
+  # ssr:false (react-router.config.ts) -> build estático en build/client,
+  # empaquetado en un nginx no-root (Dockerfile) y servido desde el mismo
+  # clúster K3s que jin-core, detrás del mismo túnel de Cloudflare
+  # (jin.jeanfranck.com) -- reemplaza al job `deploy` (Cloudflare Pages),
+  # roto desde antes de este cambio (cloudflare/pages-action ya no resuelve
+  # como Action) y que necesitaba credenciales que no están configuradas.
+  docker:
+    needs: [build, container-smoke]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Runner ARM64 nativo, mismo criterio que Jin_Core: el nodo K3s es
+    # Ampere/arm64 y emular con QEMU cuelga builds que deberían tardar ~5 min.
+    runs-on: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
         with:
-          version: 11
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm run build
-      # ssr:false (react-router.config.ts) -> build estático en build/client,
-      # servido desde Cloudflare Pages (BLUEPRINT 8.1/12.4) — sin servidor
-      # Node ni Deployment K8s para esta app.
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v6
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: jin-web
-          directory: build/client
+          context: .
+          platforms: linux/arm64
+          push: true
+          # Prohibido `latest` (mismo criterio que Jin_Core): tag único y
+          # determinista por commit, para que la IngressRoute/rollback nunca
+          # sean ambiguos.
+          tags: ghcr.io/jfrnck/jin-web:${{ github.sha }}
