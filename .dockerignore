@@ -1,0 +1,17 @@
+# Contexto de build limpio: nada de lo local llega a la imagen.
+# Sin este archivo, `COPY . .` copiaba node_modules de macOS encima del que
+# acaba de instalar el stage builder (linux/arm64 dentro del contenedor) --
+# pnpm detecta el estado inconsistente en `pnpm run build` y aborta con
+# ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY (verificado con un build local,
+# mismo bug que ya tiene documentado Jin_Core/.dockerignore).
+node_modules
+build
+.react-router
+.git
+.github
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+.idea
