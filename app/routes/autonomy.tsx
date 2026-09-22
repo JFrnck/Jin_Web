@@ -104,7 +104,7 @@ export default function Autonomy() {
         </p>
       )}
       {error && (
-        <p role="alert" style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
+        <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--accent-text)' }}>
           ⚠ No se completó: {error}
         </p>
       )}

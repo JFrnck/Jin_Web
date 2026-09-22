@@ -27,7 +27,7 @@ export function PlanProgress({ steps }: { steps: readonly AgentStep[] }) {
               gap: 8,
               color:
                 step.status === 'failed'
-                  ? '#FF8367'
+                  ? 'var(--accent-text)'
                   : step.status === 'pending'
                     ? 'var(--muted)'
                     : 'var(--text)',

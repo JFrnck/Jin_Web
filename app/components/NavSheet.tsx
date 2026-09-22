@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { NavLink } from 'react-router'
+import { NavIcon } from './NavIcons'
 
 /**
  * Hoja "Más" del nav móvil (diseño v4 §05): los 5 destinos que no caben en
@@ -13,11 +14,11 @@ import { NavLink } from 'react-router'
  */
 
 const SHEET_ITEMS = [
-  { to: '/autonomy', label: 'Autonomía', iconRadius: '3px' },
-  { to: '/audit', label: 'Audit', iconRadius: '50%' },
-  { to: '/orchestrator', label: 'Board', iconRadius: '3px' },
-  { to: '/preview', label: 'Apps', iconRadius: '3px' },
-  { to: '/memory', label: 'Memoria', iconRadius: '50%' },
+  { to: '/autonomy', label: 'Autonomía', icon: 'autonomy' },
+  { to: '/audit', label: 'Audit', icon: 'audit' },
+  { to: '/orchestrator', label: 'Board', icon: 'board' },
+  { to: '/preview', label: 'Apps', icon: 'apps' },
+  { to: '/memory', label: 'Memoria', icon: 'memory' },
 ] as const
 
 export function NavSheet({
@@ -79,15 +80,7 @@ export function NavSheet({
               onClick={onClose}
               className="jin-nav-sheet-item"
             >
-              <span
-                style={{
-                  width: 14,
-                  height: 14,
-                  border: '1.5px solid currentColor',
-                  borderRadius: item.iconRadius,
-                }}
-                aria-hidden="true"
-              />
+              <NavIcon icon={item.icon} />
               {item.label}
             </NavLink>
           ))}
@@ -97,15 +90,7 @@ export function NavSheet({
             role="link"
             aria-label="Editor, solo disponible en escritorio"
           >
-            <span
-              style={{
-                width: 14,
-                height: 14,
-                border: '1.5px solid currentColor',
-                borderRadius: '3px',
-              }}
-              aria-hidden="true"
-            />
+            <NavIcon icon="editor" />
             Editor
             <span className="jin-nav-sheet-item-sub">SOLO ESCRITORIO</span>
           </span>

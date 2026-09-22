@@ -103,7 +103,7 @@ function UnpauseButton() {
         </span>
       </button>
       {error && (
-        <p style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--accent-text)' }}>
           ⚠ No se reanudó: {error}
         </p>
       )}

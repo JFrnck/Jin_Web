@@ -199,7 +199,7 @@ export function ApprovalCard({
           ocurrió y no se reintenta sola: hay que decírselo, no dejar al owner
           creyendo que salió. */}
       {approval.executionError && (
-        <p role="alert" style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
+        <p role="alert" style={{ margin: 0, fontSize: 13, color: 'var(--accent-text)' }}>
           ⚠ La última aprobación NO se ejecutó: {approval.executionError}. No se reintenta
           sola — aprobala de nuevo si querés reintentar.
         </p>
@@ -211,7 +211,7 @@ export function ApprovalCard({
       )}
 
       {actionError && (
-        <p style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--accent-text)' }}>
           ⚠ No se completó: {actionError}
         </p>
       )}

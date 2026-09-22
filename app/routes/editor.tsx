@@ -101,7 +101,7 @@ export default function EditorPage() {
       </header>
 
       {requestError && (
-        <p style={{ margin: 0, fontSize: 13, color: '#FF8367' }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--accent-text)' }}>
           ⚠ No se pudieron pedir comentarios: {requestError}
         </p>
       )}
