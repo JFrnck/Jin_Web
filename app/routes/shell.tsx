@@ -7,29 +7,7 @@ import { NavSheet } from '~/components/NavSheet'
 import { AutonomyBanner } from '~/features/autonomy/AutonomyBanner'
 import { KillSwitchBanner } from '~/features/budget/KillSwitchBanner'
 import { useApprovals } from '~/features/hitl/useApprovals'
-
-// Los 4 fijos del nav (más "Más" abajo) y los 6 del sidebar de escritorio +
-// los 5 de la hoja móvil comparten esta única fuente: agregar una sección
-// nueva no debe requerir tocar tres listas por separado.
-const PRIMARY_NAV = [
-  { to: '/', label: 'Overview', end: true, icon: 'overview', badged: false },
-  { to: '/hitl', label: 'Aprobar', end: false, icon: 'approve', badged: true },
-  { to: '/chat', label: 'Chat', end: false, icon: 'chat', badged: false },
-  { to: '/budget', label: 'Gasto', end: false, icon: 'budget', badged: false },
-] as const
-
-const DESKTOP_EXTRA_NAV = [
-  { to: '/autonomy', label: 'Autonomía', end: false, icon: 'autonomy' },
-  { to: '/audit', label: 'Audit', end: false, icon: 'audit' },
-  { to: '/orchestrator', label: 'Board', end: false, icon: 'board' },
-  { to: '/preview', label: 'Apps', end: false, icon: 'apps' },
-  { to: '/memory', label: 'Memoria', end: false, icon: 'memory' },
-  { to: '/editor', label: 'Editor', end: false, icon: 'editor' },
-  // Puente Claude Code ↔ owner (ADR 0012) — distinto de "Chat" (que habla
-  // con el agente de Jin): acá del otro lado hay una sesión de Claude Code
-  // corriendo en la VM, sin HITL ni ejecución de acciones, solo mensajería.
-  { to: '/bridge', label: 'Claude Code', end: false, icon: 'bridge' },
-] as const
+import { DESKTOP_EXTRA_NAV, PRIMARY_NAV } from '~/lib/nav-items'
 
 export default function Shell() {
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -116,7 +94,7 @@ export default function Shell() {
           ))}
         </nav>
 
-        <main style={{ flex: 1, minWidth: 0, padding: 'var(--space-4)' }}>
+        <main className="jin-main" style={{ flex: 1, minWidth: 0 }}>
           <Outlet />
         </main>
       </div>
