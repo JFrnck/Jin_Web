@@ -1,25 +1,21 @@
 import { useEffect, useRef } from 'react'
 import { NavLink } from 'react-router'
+import { DESKTOP_EXTRA_NAV, DESKTOP_ONLY_PATH } from '~/lib/nav-items'
 import { NavIcon } from './NavIcons'
 
 /**
- * Hoja "Más" del nav móvil (diseño v4 §05): los 5 destinos que no caben en
- * la barra fija, en grid de 2 columnas sin scroll. Editor queda visible
- * pero deshabilitado en móvil — Monaco no es usable en pantalla táctil, no
- * es solo una decisión estética.
+ * Hoja "Más" del nav móvil (diseño v4 §05): los destinos que no caben en
+ * la barra fija, en grid de 2 columnas sin scroll. Lee de
+ * `DESKTOP_EXTRA_NAV` (`~/lib/nav-items`) — antes tenía su propia copia a
+ * mano (`SHEET_ITEMS`) que se desincronizó apenas se agregó una sección
+ * nueva ahí sin tocar acá. Editor (`DESKTOP_ONLY_PATH`) es el único caso
+ * especial: queda visible pero deshabilitado en móvil, Monaco no es usable
+ * en pantalla táctil, no es solo una decisión estética.
  *
- * Sin librería de modales nueva: son 6 links estáticos, así que el patrón
- * se resuelve a mano — backdrop-click y Escape cierran, el foco entra al
+ * Sin librería de modales nueva: son links estáticos, así que el patrón se
+ * resuelve a mano — backdrop-click y Escape cierran, el foco entra al
  * primer link al abrir y vuelve al botón "Más" al cerrar.
  */
-
-const SHEET_ITEMS = [
-  { to: '/autonomy', label: 'Autonomía', icon: 'autonomy' },
-  { to: '/audit', label: 'Audit', icon: 'audit' },
-  { to: '/orchestrator', label: 'Board', icon: 'board' },
-  { to: '/preview', label: 'Apps', icon: 'apps' },
-  { to: '/memory', label: 'Memoria', icon: 'memory' },
-] as const
 
 export function NavSheet({
   open,
@@ -72,28 +68,32 @@ export function NavSheet({
       >
         <div className="jin-nav-sheet-handle" aria-hidden="true" />
         <div className="jin-nav-sheet-grid">
-          {SHEET_ITEMS.map((item, index) => (
-            <NavLink
-              key={item.to}
-              ref={index === 0 ? firstItemRef : undefined}
-              to={item.to}
-              onClick={onClose}
-              className="jin-nav-sheet-item"
-            >
-              <NavIcon icon={item.icon} />
-              {item.label}
-            </NavLink>
-          ))}
-          <span
-            className="jin-nav-sheet-item"
-            aria-disabled="true"
-            role="link"
-            aria-label="Editor, solo disponible en escritorio"
-          >
-            <NavIcon icon="editor" />
-            Editor
-            <span className="jin-nav-sheet-item-sub">SOLO ESCRITORIO</span>
-          </span>
+          {DESKTOP_EXTRA_NAV.map((item, index) =>
+            item.to === DESKTOP_ONLY_PATH ? (
+              <span
+                key={item.to}
+                className="jin-nav-sheet-item"
+                aria-disabled="true"
+                role="link"
+                aria-label={`${item.label}, solo disponible en escritorio`}
+              >
+                <NavIcon icon={item.icon} />
+                {item.label}
+                <span className="jin-nav-sheet-item-sub">SOLO ESCRITORIO</span>
+              </span>
+            ) : (
+              <NavLink
+                key={item.to}
+                ref={index === 0 ? firstItemRef : undefined}
+                to={item.to}
+                onClick={onClose}
+                className="jin-nav-sheet-item"
+              >
+                <NavIcon icon={item.icon} />
+                {item.label}
+              </NavLink>
+            ),
+          )}
         </div>
       </div>
     </>
