@@ -297,6 +297,31 @@ button {
   padding: var(--space-4);
 }
 
+/* Mensajes del puente Claude↔owner (/bridge): `bodyHtml` ya viene
+   renderizado y sanitizado server-side (markdownToTelegramHtml, mismo
+   subconjunto que usa Telegram) -- solo faltaba darle estilo a `pre`/
+   `blockquote`, que no lo tienen en ningún otro lado de la app. */
+.jin-bridge-msg p {
+  margin: 0;
+}
+.jin-bridge-msg pre {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.jin-bridge-msg blockquote {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--hairline-strong);
+  color: var(--dim);
+}
+
 .jin-btn {
   font-family: var(--font-sans);
   font-size: 14px;

@@ -25,6 +25,10 @@ const DESKTOP_EXTRA_NAV = [
   { to: '/preview', label: 'Apps', end: false, icon: 'apps' },
   { to: '/memory', label: 'Memoria', end: false, icon: 'memory' },
   { to: '/editor', label: 'Editor', end: false, icon: 'editor' },
+  // Puente Claude Code ↔ owner (ADR 0012) — distinto de "Chat" (que habla
+  // con el agente de Jin): acá del otro lado hay una sesión de Claude Code
+  // corriendo en la VM, sin HITL ni ejecución de acciones, solo mensajería.
+  { to: '/bridge', label: 'Claude Code', end: false, icon: 'bridge' },
 ] as const
 
 export default function Shell() {

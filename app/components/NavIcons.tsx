@@ -24,6 +24,7 @@ export type NavIconKey =
   | 'apps'
   | 'memory'
   | 'editor'
+  | 'bridge'
   | 'more'
 
 function Svg({
@@ -113,6 +114,15 @@ const ICONS: Record<NavIconKey, (props: { active: boolean }) => ReactElement> = 
     <Svg active={active}>
       <path d="M7 5 3 10l4 5" />
       <path d="M13 5l4 5-4 5" />
+    </Svg>
+  ),
+  // Terminal/CLI: distingue a propósito de "chat" (que habla con el agente
+  // de Jin) — este ícono es la sesión de Claude Code corriendo en la VM.
+  bridge: ({ active }) => (
+    <Svg active={active}>
+      <rect x="2.5" y="3.5" width="15" height="13" rx="1.5" />
+      <path d="M6 8l2.5 2-2.5 2" />
+      <path d="M11 12h3" />
     </Svg>
   ),
   more: () => (
