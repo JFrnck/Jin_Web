@@ -25,7 +25,28 @@ export default function Shell() {
   )
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        // `height` fija + `overflow: hidden` a propósito, no `minHeight`
+        // (lo que había antes): con minHeight, cualquier pantalla con más
+        // contenido que el viewport hacía crecer la columna ENTERA más
+        // allá de 100dvh, y todo el documento scrolleaba junto -- inclusive
+        // el nav de abajo, que se iba con el resto. `position: fixed` en el
+        // nav (primer intento) se ve bien en Chromium pero es un bug
+        // conocido de iOS Safari/WebKit: un `position: fixed` dentro de un
+        // documento que scrollea como un todo puede quedar mal ubicado tras
+        // el scroll con inercia, sobre todo en PWA standalone -- confirmado
+        // en un iPhone 16 Pro Max real, no reproducible en el navegador de
+        // escritorio usado para probar el primer intento. Este patrón
+        // (contenedor exacto, sin scroll propio; solo `main` scrollea
+        // adentro) evita la clase entera de bugs: nada queda "fijo" porque
+        // nada necesita estarlo.
+        height: '100dvh',
+        overflow: 'hidden',
+      }}
+    >
       <KillSwitchBanner />
       <AutonomyBanner />
 
@@ -94,7 +115,20 @@ export default function Shell() {
           ))}
         </nav>
 
-        <main className="jin-main" style={{ flex: 1, minWidth: 0 }}>
+        {/* Único elemento que scrollea de verdad -- header, sidebar y el
+            nav móvil de abajo quedan pinneados porque el contenedor raíz
+            (arriba) no tiene scroll propio. `-webkit-overflow-scrolling`
+            es lo que le da inercia nativa al scroll interno en iOS. */}
+        <main
+          className="jin-main"
+          style={{
+            flex: 1,
+            minWidth: 0,
+            minHeight: 0,
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+          }}
+        >
           <Outlet />
         </main>
       </div>
