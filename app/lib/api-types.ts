@@ -394,6 +394,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bridge/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Historial del puente para el dashboard (ambas direcciones) — lectura pura, no consume la cola que lee el CLI de la VM */
+        get: operations["RelayDashboardController_messages"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bridge/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** El owner responde a Claude desde el dashboard — mismo rol que una respuesta por Telegram */
+        post: operations["RelayDashboardController_reply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -683,6 +717,26 @@ export interface components {
             answered: boolean;
             body?: string;
             answeredAt?: string;
+        };
+        RelayHistoryDto_Output: {
+            messages: {
+                id: string;
+                /** @enum {string} */
+                direction: "in" | "out";
+                body: string;
+                bodyHtml: string;
+                options?: string[];
+                answerTo?: string;
+                createdAt: string;
+            }[];
+        };
+        RelayReplyDto: {
+            body: string;
+            /** Format: uuid */
+            answerTo?: string;
+        };
+        RelayReplyCreatedDto_Output: {
+            id: string;
         };
     };
     responses: never;
@@ -1201,6 +1255,50 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RelayAnswerDto_Output"];
+                };
+            };
+        };
+    };
+    RelayDashboardController_messages: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayHistoryDto_Output"];
+                };
+            };
+        };
+    };
+    RelayDashboardController_reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RelayReplyDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RelayReplyCreatedDto_Output"];
                 };
             };
         };

@@ -14,5 +14,6 @@ export default [
     route('orchestrator/:runId', './routes/orchestrator.$runId.tsx'),
     route('editor', './routes/editor.tsx'),
     route('preview', './routes/preview.tsx'),
+    route('bridge', './routes/bridge.tsx'),
   ]),
 ] satisfies RouteConfig
