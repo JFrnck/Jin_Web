@@ -482,31 +482,6 @@ button {
   .jin-nav-mobile {
     display: flex !important;
   }
-
-  /* Bug real (iPhone 16 Pro Max, reportado): el contenedor raíz de Shell
-     es `minHeight: 100dvh` en una columna flex -- en cualquier página con
-     contenido más alto que la pantalla, la columna entera crece más allá
-     del viewport y este nav (el último hijo de esa columna, sin position
-     propio) se desplaza fuera de vista con el resto: hacía falta scrollear
-     para volver a verlo, y a mitad de scroll quedaba con los íconos
-     cortados. `NavSheet.tsx`/`.jin-nav-sheet` ya asumía 84px + safe-area
-     como la altura de ESTE nav para posicionarse (`bottom: calc(84px +
-     ...)`)-- ese cálculo solo tenía sentido si el nav estaba fijo, que es
-     justo lo que faltaba. */
-  .jin-nav-mobile-bar {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-  }
-
-  /* Reserva el espacio que tapa el nav ahora fijo -- sin esto, el final de
-     cada pantalla (el último botón, el input de un formulario) quedaría
-     oculto detrás de la barra en vez de solo requerir scroll para verlo. */
-  .jin-main {
-    padding-bottom: calc(var(--space-4) + 84px + env(safe-area-inset-bottom));
-  }
 }
 
 /* ── Caja "influido por" — ámbar, nunca rojo señal: es información, no
