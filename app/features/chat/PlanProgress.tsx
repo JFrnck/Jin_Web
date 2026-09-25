@@ -1,8 +1,16 @@
-import type { components } from '~/lib/api-types'
+// Shape estructural, no derivado exclusivamente del DTO generado: acepta
+// tanto el snapshot final (`AgentTurnResultDto_Output['plan']['steps']`,
+// vía api-types.ts) como el plan en vivo del streaming
+// (`AgentPlan['steps']`, vía agent-progress.types.ts) — ambos coinciden
+// en forma, así que este componente no necesita saber cuál le llegó.
+type AgentStepStatus = 'pending' | 'in-progress' | 'done' | 'failed'
+interface AgentStep {
+  readonly description: string
+  readonly status: AgentStepStatus
+  readonly note?: string
+}
 
-type AgentStep = components['schemas']['AgentTurnResultDto_Output']['plan']['steps'][number]
-
-const ICON: Record<AgentStep['status'], string> = {
+const ICON: Record<AgentStepStatus, string> = {
   done: '✓',
   'in-progress': '…',
   pending: '○',
