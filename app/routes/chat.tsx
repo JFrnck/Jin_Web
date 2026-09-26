@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useChat } from '~/features/chat/useChat'
 import { PlanProgress } from '~/features/chat/PlanProgress'
+import { LiveToolCalls } from '~/features/chat/LiveToolCalls'
 import { Button } from '~/components/Button'
 
 const SUGGESTIONS = [
@@ -58,20 +59,42 @@ export default function Chat() {
         {turns.map((turn, index) => (
           <div key={index} style={{ display: 'grid', gap: 'var(--space-2)' }}>
             <div className="jin-card--sunken">{turn.objective}</div>
-            {turn.result && (
+            {turn.result ? (
               <>
                 {turn.result.plan.steps.length > 0 && (
                   <PlanProgress steps={turn.result.plan.steps} />
                 )}
                 <div className="jin-card">{turn.result.finalResponse}</div>
               </>
+            ) : (
+              <>
+                {/* Streaming en vivo mientras el turno corre — el texto
+                    autoritativo sigue siendo `turn.result.finalResponse`
+                    (arriba): el backend puede sustituirlo por un mensaje
+                    de refusal/vacío (ver resolveFinalResponseText en
+                    Jin_Core), así que este card se descarta al cerrar. */}
+                {turn.progress.plan && turn.progress.plan.steps.length > 0 && (
+                  <PlanProgress steps={turn.progress.plan.steps} />
+                )}
+                <LiveToolCalls toolCalls={turn.progress.toolCalls} />
+                {turn.progress.liveText && (
+                  <div className="jin-card">{turn.progress.liveText}</div>
+                )}
+                {!turn.progress.plan &&
+                  turn.progress.toolCalls.length === 0 &&
+                  !turn.progress.liveText &&
+                  !turn.error && (
+                    <p className="jin-dim mono" style={{ fontSize: 12 }}>
+                      trabajando…
+                    </p>
+                  )}
+              </>
             )}
+            {/* No condicionado a "sin progreso": si el turno falló DESPUÉS
+                de emitir texto parcial, ese texto queda visible arriba —
+                nunca se pierde lo que ya se mostró (mismo criterio que la
+                desconexión en useChat.ts). */}
             {turn.error && <div className="jin-callout-danger">{turn.error}</div>}
-            {!turn.result && !turn.error && (
-              <p className="jin-dim mono" style={{ fontSize: 12 }}>
-                trabajando…
-              </p>
-            )}
           </div>
         ))}
       </div>
@@ -95,7 +118,7 @@ export default function Chat() {
         </Button>
       </form>
       <p className="jin-dim" style={{ fontSize: 11, margin: 0 }}>
-        la respuesta llega completa al cerrar el turno · sin escritura en vivo
+        el plan, las tool calls y la respuesta se transmiten en vivo
       </p>
     </section>
   )

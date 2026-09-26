@@ -23,7 +23,12 @@ export function getDefaultSocket(): Socket {
   return defaultSocket
 }
 
-/** Namespace `/chat`: `chat:message` → `chat:response` | `chat:error`. */
+/**
+ * Namespace `/chat`: `chat:message` → `chat:progress`* (0 o más, en vivo
+ * mientras el turno corre: plan/tool-call-started/tool-call-finished/
+ * text-delta — ver `agent-progress.types.ts`) → `chat:response` |
+ * `chat:error` (siempre uno solo, al cerrar el turno).
+ */
 export function getChatSocket(): Socket {
   chatSocket ??= connect('/chat')
   return chatSocket
